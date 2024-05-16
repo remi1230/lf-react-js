@@ -16,7 +16,6 @@ let glo = {
 };
 
 let updDialog = getById('updDialog');
-let delDialog = getById('delDialog');
 
 document.addEventListener('DOMContentLoaded', async function() {
     glo.taskId = localStorage.getItem('taskId');
@@ -24,35 +23,36 @@ document.addEventListener('DOMContentLoaded', async function() {
     makeHTMLTask();
 });
 
-window.addEventListener('click', (event) => {
-    if(updDialog.open && event.target.id !== 'divIconUpd') {
-        updDialog.close();
-    }
-    /*else if(delDialog.open && event.target.id !== 'divIconDel') {
-        delDialog.close();
-    }*/
-});
-
 function makeHTMLTask(dataTask = glo.oneTodo){
     let divParent    = document.createElement('div');
     let divChildTxt  = document.createElement('div');
+    let divChildTags = document.createElement('div');
     let divChildDate = document.createElement('div');
     let divChildDone = document.createElement('div');
     let txt  = document.createTextNode(dataTask.text);
+    let tags = document.createTextNode(dataTask.Tags.join(', '));
     let date = document.createTextNode(dateToStrFr(new Date(dataTask.created_at), true));
     let done = document.createTextNode(dataTask.is_complete ? 'Terminée' : 'En cours');
     
     divChildTxt.appendChild(txt);
+    divChildTags.appendChild(tags);
     divChildDate.appendChild(date);
     divChildDone.appendChild(done);
 
+    divChildTxt.id  = 'taskTxt';
+    divChildTags.id = 'taskTags';
+    divChildDate.id = 'taskDate';
+    divChildDone.id = 'taskDone';
+
     divChildTxt.style.whiteSpace = 'nowrap';
     divChildDate.style.whiteSpace = 'nowrap';
+    divChildTags.style.whiteSpace = 'nowrap';
     divChildDone.style.whiteSpace = 'nowrap';
 
     styleHTMLTask(app);
 
     divParent.appendChild(divChildTxt);
+    divParent.appendChild(divChildTags);
     divParent.appendChild(divChildDate);
     divParent.appendChild(divChildDone);
 
@@ -77,7 +77,16 @@ function makeHTMLTask(dataTask = glo.oneTodo){
     divIconUpd.id = 'divIconUpd';
     divIconDel.id = 'divIconDel';
 
-    divIconUpd.onclick = function() { openUpdModal(); };
+    divIconUpd.onclick = async function() {
+        const is_complete = getTaskDoneSwitchValue();
+        await toggleStatusTask(dataTask.id, is_complete);
+    };
+    divIconDel.onclick = async function() {
+        var result = confirm("Êtes-vous sûr de vouloir supprimer cette tâche ?");
+        if(result){
+            await sendDelRequest(dataTask.id);
+        }
+    };
 
     divIcons.appendChild(divIconUpd);
     divIcons.appendChild(divIconDel);
@@ -90,8 +99,108 @@ function makeHTMLTask(dataTask = glo.oneTodo){
     app.appendChild(divIcons);
 }
 
-function openUpdModal(){
-    updDialog.showModal();
+function getTaskDoneSwitchValue(){
+    const taskDoneValue       = getById('taskDone').innerText;
+    const taskDoneSwitchValue = taskDoneValue === 'En cours' ? true : false;
+
+    return taskDoneSwitchValue;
+}
+
+async function toggleStatusTask(id, is_complete){
+    await sendPutRequest(id, is_complete);
+}
+
+/**
+ * Envoie une requête PUT avec les données spécifiées pour mettre à jour une ressource identifiée par un id.
+ * @param {number} id - Identifiant de la ressource à mettre à jour.
+ */
+async function sendPutRequest(id, is_complete) {
+    const url    = `${glo.urls.baseFetch}/${id}`;
+    const body   = {
+        "is_complete": is_complete
+    };
+
+    try {
+        const response = await putInFetch(url, body);
+        console.log('Données mises à jour:', response);
+        taskDone.innerText = is_complete ? 'Terminée' : "En cours";
+    } catch (error) {
+        console.error('Erreur lors de l\'envoi de la requête PUT:', error);
+    }
+}
+
+/**
+ * Envoie une requête DELETE avec les données spécifiées pour supprimer une ressource identifiée par un id.
+ * @param {number} id - Identifiant de la ressource à supprimer.
+ */
+async function sendDelRequest(id) {
+    const url = `${glo.urls.baseFetch}/${id}`; 
+
+    try {
+        const response = await delInFetch(url);
+        app.remove();
+        getById('portfolio').innerHTML = "<h2>Tâche supprimée !</h2>";
+    } catch (error) {
+        console.error('Erreur lors de l\'envoi de la requête DELETE:', error);
+    }
+}
+
+/**
+ * Effectue une requête HTTP et renvoie les données après avoir reçu la réponse.
+ * @param {string} url - URL à laquelle effectuer la requête.
+ * @param {Object} [body] - Corps de la requête à envoyer (pour les requêtes POST, PUT, etc.).
+ * @param {Function} [successFunction] - Fonction à exécuter après une réponse réussie.
+ * @param {any} [successFunctionParams] - Paramètres optionnels à passer à la fonction de succès.
+ * @returns {Promise<any>} - Promesse résolue avec les données de la réponse.
+ */
+async function delInFetch(url, successFunction, successFunctionParams) {
+    return await fetchRequest(url, 'DELETE', null, successFunction, successFunctionParams);
+}
+
+/**
+ * Effectue une requête HTTP et renvoie les données après avoir reçu la réponse.
+ * @param {string} url - URL à laquelle effectuer la requête.
+ * @param {Object} [body] - Corps de la requête à envoyer (pour les requêtes POST, PUT, etc.).
+ * @param {Function} [successFunction] - Fonction à exécuter après une réponse réussie.
+ * @param {any} [successFunctionParams] - Paramètres optionnels à passer à la fonction de succès.
+ * @returns {Promise<any>} - Promesse résolue avec les données de la réponse.
+ */
+async function putInFetch(url, body, successFunction, successFunctionParams) {
+    return await fetchRequest(url, 'PUT', body, successFunction, successFunctionParams);
+}
+
+/**
+ * Effectue une requête HTTP et renvoie les données après avoir reçu la réponse.
+ * @param {string} url - URL à laquelle effectuer la requête.
+ * @param {string} method - Méthode HTTP à utiliser (GET, POST, PUT, etc.).
+ * @param {Object} [body] - Corps de la requête à envoyer (pour les requêtes POST, PUT, etc.).
+ * @param {Function} [successFunction] - Fonction à exécuter après une réponse réussie.
+ * @param {any} [successFunctionParams] - Paramètres optionnels à passer à la fonction de succès.
+ * @returns {Promise<any>} - Promesse résolue avec les données de la réponse.
+ */
+async function fetchRequest(url, method, body, successFunction, successFunctionParams) {
+    try {
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: body ? JSON.stringify(body) : null,
+        });
+
+        let data;
+        if(method !== 'DELETE'){ data = await response.json(); }
+        else{ data = "Tâche supprimée !"; }
+
+        if (successFunction) {
+            await successFunction(successFunctionParams ? successFunctionParams() : undefined);
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Erreur:', error);
+        throw error;
+    }
 }
 
 function styleHTMLTask(divTask){
@@ -138,36 +247,4 @@ async function getOneTodo(id) {
  */
 async function getOneInFetch(id, successFunction, successFunctionParams) {
     return await fetchRequest(glo.urls.baseFetch + '/' + id, 'GET', null, successFunction, successFunctionParams);
-}
-
-/**
- * Effectue une requête HTTP et renvoie les données après avoir reçu la réponse.
- * @param {string} url - URL à laquelle effectuer la requête.
- * @param {string} method - Méthode HTTP à utiliser (GET, POST, PUT, etc.).
- * @param {Object} [body] - Corps de la requête à envoyer (pour les requêtes POST, PUT, etc.).
- * @param {Function} [successFunction] - Fonction à exécuter après une réponse réussie.
- * @param {any} [successFunctionParams] - Paramètres optionnels à passer à la fonction de succès.
- * @returns {Promise<any>} - Promesse résolue avec les données de la réponse.
- */
-async function fetchRequest(url, method, body, successFunction, successFunctionParams) {
-    try {
-        const response = await fetch(url, {
-            method: method,
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: body ? JSON.stringify(body) : null,
-        });
-
-        const data = await response.json();
-
-        if (successFunction) {
-            await successFunction(successFunctionParams ? successFunctionParams() : undefined);
-        }
-
-        return data;
-    } catch (error) {
-        console.error('Erreur:', error);
-        throw error;
-    }
 }
