@@ -650,6 +650,16 @@ progress {
 .oneTaskTitleParent{
   display: grid;
   grid-template-columns: 55px 100%;
+  margin-bottom: 10px;
+}
+
+.taskTag{
+  background-color: #1ca9c0;
+  color: #efefef;
+  border: 1px #847d7e solid;
+  border-radius: 50px;
+  margin-right: 7px;
+  padding: 0px 10px 3px;
 }
 
 #taskActions{
@@ -698,6 +708,16 @@ progress {
   font-size: 54px;
   color: #419baa;
 }
+.oneTaskContainer{
+  border-radius: 6px;
+  margin-bottom: 7px;
+  padding: 15px 20px 15px 15px;
+  width: fit-content;
+  gap: 18%;
+  background-color: #ccc;
+  border: 1px #aaa solid;
+  box-shadow: 10px 10px 10px #999;
+}
 
 #contentTitleFirstname{
   margin-bottom: 25px;
@@ -707,6 +727,14 @@ progress {
   right: 15px;
   top: 0;
   color: #e94817;
+}
+
+#toggleStateTaskButton, #deleteTaskButton{
+  width: 152px;
+}
+#taskDone{
+  font-weight: 900;
+  color: #f73708;
 }
 
 
