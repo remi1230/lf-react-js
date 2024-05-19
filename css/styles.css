@@ -641,6 +641,25 @@ progress {
   margin-left: auto;
 }
 
+.centerFlex{
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+}
+.oneTaskTitleParent{
+  display: grid;
+  grid-template-columns: 55px 100%;
+}
+
+#taskActions{
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 50px;
+  margin-top: 25px;
+}
+
 
 
 
@@ -678,6 +697,16 @@ progress {
   font-size: 54px;
   font-size: 54px;
   color: #419baa;
+}
+
+#contentTitleFirstname{
+  margin-bottom: 25px;
+}
+#userConnect{
+  position: absolute;
+  right: 15px;
+  top: 0;
+  color: #e94817;
 }
 
 

@@ -1,26 +1,5 @@
-/**
- * Récupère un élément du DOM par son identifiant.
- * @param {string} id - L'identifiant de l'élément à récupérer.
- * @returns {Element} L'élément du DOM correspondant à l'identifiant fourni.
- */
-const getById = id => document.getElementById(id);
-const app     = getById('app');
-
-
-// Déclaration d'un objet pour les variables globales
-let glo = {
-    urls: {
-        base      : 'http://localhost:8080/',
-        baseFetch : 'http://localhost:3000/todos',
-    },
-    todos : [],
-    styles: {
-        itemHovering: '#eee',
-        itemNoAction: '#fff',
-    },
-};
-
 document.addEventListener('DOMContentLoaded', async function() {
+    showUserConnectInfos();
     await getAllTodos();
     feedTaskStats();
 });
