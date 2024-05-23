@@ -27,7 +27,7 @@ function makeHTMLTask(dataTask = glo.oneTodo){
         });
         return divParent;
     }
-    function makeItemTask(title, content, divContentId){
+    function makeItemTask(title, content, divContentId, titleTask = false){
         let [divChildParent, divChildTitle, divChildContent] = createDivs(3);
 
         let txtTitle = document.createTextNode(title);
@@ -39,6 +39,8 @@ function makeHTMLTask(dataTask = glo.oneTodo){
         divChildContent.appendChild(txt);
         divChildParent.appendChild(divChildTitle);
         divChildParent.appendChild(divChildContent);
+
+        if(titleTask){ divChildContent.style.fontWeight = '900'; }
 
         divChildContent.id = divContentId;
 
@@ -59,7 +61,7 @@ function makeHTMLTask(dataTask = glo.oneTodo){
 
     date = 'Créée le ' + date.replace(/ /g, ' à ');
     
-    let divDescription = makeItemTask("Titre :".replace(/ /g, '\u00A0'), dataTask.text, 'taskText');
+    let divDescription = makeItemTask("Titre :".replace(/ /g, '\u00A0'), dataTask.text, 'taskText', true);
     let divTags        = makeItemTask("Tags  :".replace(/ /g, '\u00A0'), dataTask.Tags, 'taskTags');
     let divDate        = makeItemTask("Date :".replace(/ /g, '\u00A0'), date, 'taskDate');
     let divDone        = makeItemTask("État   :".replace(/ /g, '\u00A0'), done, 'taskDone');
